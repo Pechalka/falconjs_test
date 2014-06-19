@@ -1,0 +1,20 @@
+{
+  "name": "falcone-test",
+  "version": "0.0.0",
+  "authors": [
+    "pechalka <luzkovskyandrey@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "falconjs": "~0.10.2",
+    "knockout.js": "~3.1.0",
+    "jquery": "~2.1.1"
+  }
+}

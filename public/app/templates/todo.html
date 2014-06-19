@@ -1,0 +1,15 @@
+<div>
+	<ul data-bind="foreach : $view.todos">
+		<li>
+		<label>
+			<input data-bind="checked : completed" type="checkbox">	
+			<!-- ko text : title --><!-- /ko -->	
+		</label>
+			<a data-bind="click : $view.remove" href>X</a>
+		</li>
+	</ul>
+	<div >
+		<input data-bind="value : $view.new_title" />	
+		<a data-bind="click : $view.add" href>add</a>
+	</div>
+</div>
