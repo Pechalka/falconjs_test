@@ -1,18 +1,64 @@
-var Todo = Falcon.Model.extend({
-	url : 'api/todo',
-	observables : {
-		title : '',
-		completed : false,
-		change : function(){
-			var c = this.completed();
-			alert(c);
-			//this.save();
-		}
+var AutoUpdateModel = Falcon.Model.extend({
+	startTraking : function(){
+		var lastValue = ko.observable(ko.toJSON(this.serialize()));
+        var isDirty  = ko.computed({
+            read: function () {
+            	return ko.toJSON(this.serialize()) !== lastValue();
+            },
+            write: function (newValue) {
+                if (newValue) {
+                    lastValue('');
+                } else {
+                    lastValue(ko.toJSON(this.serialize()));
+                }
+            },
+            owner : this
+        });
+
+        ko.computed(function () {
+
+			if (isDirty()) this.save();
+
+	    }, this).extend({throttle: 200 });
+	},
+	autoUpdate : function(){
+		this.on('create', function(){
+		
+			this.startTraking();
+		
+		}, this)
 	}
 })
 
-var Todos = Falcon.Collection.extend({
-	model : Todo
+var AutoUpdateCollection = Falcon.Collection.extend({
+	autoUpdate : function(){
+		this.on('fetch', function(){
+			this.each(function(m){
+				m.startTraking();
+			})
+		}, this);
+	}
+})
+
+var Todo = AutoUpdateModel.extend({
+	url : 'api/todo',
+	observables : {
+		title : '',
+		completed : false
+	},
+	initialize : function(){
+		this.autoUpdate();
+	}
+	// ,validate : function(){
+	// 	return confirm('valid');
+	// }
+})
+
+var Todos = AutoUpdateCollection.extend({
+	model : Todo,
+	initialize : function(){
+		this.autoUpdate();
+	}
 })
 
 
@@ -26,9 +72,6 @@ var TodoView = Falcon.View.extend({
 	},
 	initialize : function(){
 		this.todos.fetch()
-			.done(function(){ 
-				console.log('load todos')
-			});
 	},
 	add : function(){
 		this.todos.create(
@@ -66,13 +109,14 @@ var AppView = Falcon.View.extend({
 	defaults : {
 		views : [ 'todo', 'test']
 	},
-	initialize : function(){
-		this.show('todo')
-	},
 	show : function(item){
 		var View = views[item];
 		Falcon.apply(new View, '#container');
+	},
+	display : function(){
+		this.show('todo')
 	}
 });
 
-Falcon.apply(new AppView);
+var view = new AppView();
+Falcon.apply(view);
